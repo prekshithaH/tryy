@@ -13,12 +13,9 @@ import {
   Heart,
   Plus,
   Home,
-  ArrowLeft,
-  Save,
-  X,
-  CheckCircle
+  ArrowLeft
 } from 'lucide-react';
-import { Patient, HealthRecord, BloodPressureData, SugarLevelData, BabyMovementData } from '../types';
+import { Patient } from '../types';
 
 interface PatientDashboardProps {
   patient: Patient;
@@ -26,35 +23,6 @@ interface PatientDashboardProps {
 
 const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [healthRecords, setHealthRecords] = useState<HealthRecord[]>(patient.healthRecords || []);
-
-  // Form states
-  const [bloodPressureForm, setBloodPressureForm] = useState({
-    systolic: '',
-    diastolic: '',
-    heartRate: '',
-    notes: ''
-  });
-
-  const [sugarLevelForm, setSugarLevelForm] = useState({
-    level: '',
-    testType: 'fasting' as 'fasting' | 'random' | 'post_meal',
-    notes: ''
-  });
-
-  const [babyMovementForm, setBabyMovementForm] = useState({
-    count: '',
-    duration: '',
-    notes: ''
-  });
-
-  const [nutritionForm, setNutritionForm] = useState({
-    meal: '',
-    foods: '',
-    calories: '',
-    notes: ''
-  });
 
   const features = [
     {
@@ -115,54 +83,6 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
     }
   ];
 
-  const addHealthRecord = (type: string, data: any) => {
-    const newRecord: HealthRecord = {
-      id: Date.now().toString(),
-      patientId: patient.id,
-      date: new Date().toISOString(),
-      type: type as any,
-      data
-    };
-
-    const updatedRecords = [...healthRecords, newRecord];
-    setHealthRecords(updatedRecords);
-    
-    // Save to localStorage
-    const updatedPatient = { ...patient, healthRecords: updatedRecords };
-    localStorage.setItem('user', JSON.stringify(updatedPatient));
-    
-    // Also update in registered users
-    const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    const userIndex = existingUsers.findIndex((u: any) => u.id === patient.id);
-    if (userIndex !== -1) {
-      existingUsers[userIndex] = { ...existingUsers[userIndex], healthRecords: updatedRecords };
-      localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
-    }
-    
-    setShowAddForm(false);
-    resetForms();
-  };
-
-  const resetForms = () => {
-    setBloodPressureForm({ systolic: '', diastolic: '', heartRate: '', notes: '' });
-    setSugarLevelForm({ level: '', testType: 'fasting', notes: '' });
-    setBabyMovementForm({ count: '', duration: '', notes: '' });
-    setNutritionForm({ meal: '', foods: '', calories: '', notes: '' });
-  };
-
-  const getRecordsByType = (type: string) => {
-    return healthRecords.filter(record => record.type === type);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
   const renderOverview = () => (
     <div className="space-y-6">
       {/* Pregnancy Progress */}
@@ -170,17 +90,17 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold mb-2">Pregnancy Progress</h3>
-            <p className="text-pink-100">Week {patient.currentWeek || 0} of 40</p>
+            <p className="text-pink-100">Week {patient.currentWeek} of 40</p>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold">{patient.currentWeek || 0}/40</p>
+            <p className="text-2xl font-bold">{patient.currentWeek}/40</p>
             <p className="text-pink-100">weeks</p>
           </div>
         </div>
         <div className="mt-4 bg-white bg-opacity-20 rounded-full h-2">
           <div 
             className="bg-white rounded-full h-2 transition-all duration-500"
-            style={{ width: `${((patient.currentWeek || 0) / 40) * 100}%` }}
+            style={{ width: `${(patient.currentWeek / 40) * 100}%` }}
           />
         </div>
       </div>
@@ -202,678 +122,149 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
         ))}
       </div>
 
-      {/* Recent Activity */}
+      {/* Getting Started */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-        {healthRecords.length > 0 ? (
-          <div className="space-y-3">
-            {healthRecords.slice(-3).reverse().map((record) => (
-              <div key={record.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                <div className={`w-2 h-2 rounded-full ${
-                  record.type === 'blood_pressure' ? 'bg-red-500' :
-                  record.type === 'sugar_level' ? 'bg-blue-500' :
-                  record.type === 'baby_movement' ? 'bg-pink-500' :
-                  'bg-gray-500'
-                }`} />
-                <div className="flex-1">
-                  <p className="text-sm font-medium capitalize">{record.type.replace('_', ' ')}</p>
-                  <p className="text-xs text-gray-400">
-                    {record.type === 'blood_pressure' && `${record.data.systolic}/${record.data.diastolic} mmHg`}
-                    {record.type === 'sugar_level' && `${record.data.level} mg/dL (${record.data.testType.replace('_', ' ')})`}
-                    {record.type === 'baby_movement' && `${record.data.count} movements`}
-                  </p>
-                  <p className="text-xs text-gray-500">{formatDate(record.date)}</p>
-                </div>
-              </div>
-            ))}
+        <h3 className="text-lg font-semibold mb-4">Getting Started</h3>
+        <div className="space-y-3">
+          <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
+            <Activity className="w-5 h-5 text-blue-500" />
+            <div>
+              <p className="text-sm font-medium">Start tracking your health</p>
+              <p className="text-xs text-gray-500">Begin by recording your first blood pressure reading</p>
+            </div>
           </div>
-        ) : (
-          <div className="text-center py-8">
-            <Activity className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">No activity yet. Start tracking your health!</p>
-            <button 
-              onClick={() => setActiveTab('blood-pressure')}
-              className="mt-3 text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Add your first reading
-            </button>
+          <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+            <ChefHat className="w-5 h-5 text-green-500" />
+            <div>
+              <p className="text-sm font-medium">Plan your nutrition</p>
+              <p className="text-xs text-gray-500">Check out the nutrition chart for healthy meal ideas</p>
+            </div>
           </div>
-        )}
+          <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg">
+            <MessageCircle className="w-5 h-5 text-purple-500" />
+            <div>
+              <p className="text-sm font-medium">Connect with your doctor</p>
+              <p className="text-xs text-gray-500">Send messages and receive guidance from healthcare professionals</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 
-  const renderBloodPressureForm = () => (
-    <div className="bg-white rounded-lg p-6 border border-gray-200 mb-6">
-      <h4 className="text-lg font-semibold mb-4">Add Blood Pressure Reading</h4>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Systolic (mmHg)</label>
-          <input
-            type="number"
-            min="70"
-            max="200"
-            value={bloodPressureForm.systolic}
-            onChange={(e) => setBloodPressureForm({...bloodPressureForm, systolic: e.target.value})}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            placeholder="120"
-            required
-          />
-          <p className="text-xs text-gray-500 mt-1">Normal: 90-120 mmHg</p>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Diastolic (mmHg)</label>
-          <input
-            type="number"
-            min="40"
-            max="120"
-            value={bloodPressureForm.diastolic}
-            onChange={(e) => setBloodPressureForm({...bloodPressureForm, diastolic: e.target.value})}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            placeholder="80"
-            required
-          />
-          <p className="text-xs text-gray-500 mt-1">Normal: 60-80 mmHg</p>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Heart Rate (bpm)</label>
-          <input
-            type="number"
-            min="50"
-            max="150"
-            value={bloodPressureForm.heartRate}
-            onChange={(e) => setBloodPressureForm({...bloodPressureForm, heartRate: e.target.value})}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            placeholder="72"
-          />
-          <p className="text-xs text-gray-500 mt-1">Normal: 60-100 bpm</p>
-        </div>
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Notes (optional)</label>
-        <textarea
-          value={bloodPressureForm.notes}
-          onChange={(e) => setBloodPressureForm({...bloodPressureForm, notes: e.target.value})}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-          rows={3}
-          placeholder="Any additional notes..."
-        />
-      </div>
-      
-      {/* Reading Status Indicator */}
-      {bloodPressureForm.systolic && bloodPressureForm.diastolic && (
-        <div className="mb-4 p-3 rounded-lg border">
-          {(() => {
-            const systolic = parseInt(bloodPressureForm.systolic);
-            const diastolic = parseInt(bloodPressureForm.diastolic);
-            
-            if (systolic >= 140 || diastolic >= 90) {
-              return (
-                <div className="flex items-center space-x-2 text-red-600">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span className="text-sm font-medium">High Blood Pressure - Consult your doctor</span>
-                </div>
-              );
-            } else if (systolic < 90 || diastolic < 60) {
-              return (
-                <div className="flex items-center space-x-2 text-yellow-600">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span className="text-sm font-medium">Low Blood Pressure - Monitor closely</span>
-                </div>
-              );
-            } else {
-              return (
-                <div className="flex items-center space-x-2 text-green-600">
-                  <CheckCircle className="w-4 h-4" />
-                  <span className="text-sm font-medium">Normal Blood Pressure</span>
-                </div>
-              );
-            }
-          })()}
-        </div>
-      )}
-      
-      <div className="flex space-x-3">
-        <button
-          onClick={() => {
-            if (bloodPressureForm.systolic && bloodPressureForm.diastolic) {
-              addHealthRecord('blood_pressure', {
-                systolic: parseInt(bloodPressureForm.systolic),
-                diastolic: parseInt(bloodPressureForm.diastolic),
-                heartRate: parseInt(bloodPressureForm.heartRate) || 0,
-                notes: bloodPressureForm.notes
-              });
-            }
-          }}
-          disabled={!bloodPressureForm.systolic || !bloodPressureForm.diastolic}
-          className={`px-4 py-2 rounded-lg flex items-center space-x-2 font-medium transition-colors ${
-            bloodPressureForm.systolic && bloodPressureForm.diastolic
-              ? 'bg-red-500 hover:bg-red-600 text-white'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          <Save className="w-4 h-4" />
-          <span>Save Reading</span>
-        </button>
-        <button
-          onClick={() => setShowAddForm(false)}
-          className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2"
-        >
-          <X className="w-4 h-4" />
-          <span>Cancel</span>
-        </button>
-      </div>
-    </div>
-  );
-
-  const renderBloodPressure = () => {
-    const records = getRecordsByType('blood_pressure');
-    
-    return (
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <button 
-              onClick={() => setActiveTab('overview')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
-            </button>
-            <h3 className="text-lg font-semibold">Blood Pressure Tracker</h3>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={() => setActiveTab('overview')}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-            >
-              <Home className="w-4 h-4" />
-              <span>Dashboard</span>
-            </button>
-            <button 
-              onClick={() => setShowAddForm(true)}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add Reading</span>
-            </button>
-          </div>
-        </div>
-        
-        {showAddForm && renderBloodPressureForm()}
-        
-        <div className="mt-6">
-          {records.length > 0 ? (
-            <div className="space-y-4">
-              {records.reverse().map((record) => (
-                <div key={record.id} className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <p className="font-medium text-gray-800">
-                        {record.data.systolic}/{record.data.diastolic} mmHg
-                        </p>
-                        {(() => {
-                          const systolic = record.data.systolic;
-                          const diastolic = record.data.diastolic;
-                          
-                          if (systolic >= 140 || diastolic >= 90) {
-                            return <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">High</span>;
-                          } else if (systolic < 90 || diastolic < 60) {
-                            return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Low</span>;
-                          } else {
-                            return <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Normal</span>;
-                          }
-                        })()}
-                      </div>
-                      {record.data.heartRate > 0 && (
-                        <p className="text-sm text-gray-600">Heart Rate: {record.data.heartRate} bpm</p>
-                      )}
-                    </div>
-                    <span className="text-xs text-gray-500">{formatDate(record.date)}</span>
-                  </div>
-                  {record.data.notes && (
-                    <p className="text-sm text-gray-600 mt-2">{record.data.notes}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <Activity className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h4 className="text-lg font-medium text-gray-600 mb-2">No readings yet</h4>
-              <p className="text-gray-500 mb-6">Start tracking your blood pressure by adding your first reading</p>
-              <button 
-                onClick={() => setShowAddForm(true)}
-                className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium"
-              >
-                Add First Reading
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  const renderSugarLevelForm = () => (
-    <div className="bg-white rounded-lg p-6 border border-gray-200 mb-6">
-      <h4 className="text-lg font-semibold mb-4">Add Sugar Level Reading</h4>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Sugar Level (mg/dL)</label>
-          <input
-            type="number"
-            min="50"
-            max="400"
-            value={sugarLevelForm.level}
-            onChange={(e) => setSugarLevelForm({...sugarLevelForm, level: e.target.value})}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="100"
-            required
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            {sugarLevelForm.testType === 'fasting' ? 'Normal: 70-100 mg/dL' :
-             sugarLevelForm.testType === 'post_meal' ? 'Normal: <140 mg/dL' :
-             'Normal: 70-140 mg/dL'}
-          </p>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Test Type</label>
-          <select
-            value={sugarLevelForm.testType}
-            onChange={(e) => setSugarLevelForm({...sugarLevelForm, testType: e.target.value as any})}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+  const renderBloodPressure = () => (
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <button 
+            onClick={() => setActiveTab('overview')}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            <option value="fasting">Fasting</option>
-            <option value="random">Random</option>
-            <option value="post_meal">Post Meal</option>
-          </select>
+            <ArrowLeft className="w-5 h-5 text-gray-600" />
+          </button>
+          <h3 className="text-lg font-semibold">Blood Pressure Tracker</h3>
+        </div>
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => setActiveTab('overview')}
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            <span>Dashboard</span>
+          </button>
+          <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+            <Plus className="w-4 h-4" />
+            <span>Add Reading</span>
+          </button>
         </div>
       </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Notes (optional)</label>
-        <textarea
-          value={sugarLevelForm.notes}
-          onChange={(e) => setSugarLevelForm({...sugarLevelForm, notes: e.target.value})}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          rows={3}
-          placeholder="Any additional notes..."
-        />
-      </div>
       
-      {/* Sugar Level Status Indicator */}
-      {sugarLevelForm.level && (
-        <div className="mb-4 p-3 rounded-lg border">
-          {(() => {
-            const level = parseInt(sugarLevelForm.level);
-            const testType = sugarLevelForm.testType;
-            
-            let isHigh = false;
-            let isLow = false;
-            
-            if (testType === 'fasting') {
-              isHigh = level > 100;
-              isLow = level < 70;
-            } else if (testType === 'post_meal') {
-              isHigh = level > 140;
-              isLow = level < 70;
-            } else {
-              isHigh = level > 140;
-              isLow = level < 70;
-            }
-            
-            if (isHigh) {
-              return (
-                <div className="flex items-center space-x-2 text-red-600">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span className="text-sm font-medium">High Sugar Level - Consult your doctor</span>
-                </div>
-              );
-            } else if (isLow) {
-              return (
-                <div className="flex items-center space-x-2 text-yellow-600">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span className="text-sm font-medium">Low Sugar Level - Monitor closely</span>
-                </div>
-              );
-            } else {
-              return (
-                <div className="flex items-center space-x-2 text-green-600">
-                  <CheckCircle className="w-4 h-4" />
-                  <span className="text-sm font-medium">Normal Sugar Level</span>
-                </div>
-              );
-            }
-          })()}
-        </div>
-      )}
-      
-      <div className="flex space-x-3">
-        <button
-          onClick={() => {
-            if (sugarLevelForm.level) {
-              addHealthRecord('sugar_level', {
-                level: parseInt(sugarLevelForm.level),
-                testType: sugarLevelForm.testType,
-                notes: sugarLevelForm.notes
-              });
-            }
-          }}
-          disabled={!sugarLevelForm.level}
-          className={`px-4 py-2 rounded-lg flex items-center space-x-2 font-medium transition-colors ${
-            sugarLevelForm.level
-              ? 'bg-blue-500 hover:bg-blue-600 text-white'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          <Save className="w-4 h-4" />
-          <span>Save Reading</span>
-        </button>
-        <button
-          onClick={() => setShowAddForm(false)}
-          className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2"
-        >
-          <X className="w-4 h-4" />
-          <span>Cancel</span>
+      <div className="text-center py-12">
+        <Activity className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <h4 className="text-lg font-medium text-gray-600 mb-2">No readings yet</h4>
+        <p className="text-gray-500 mb-6">Start tracking your blood pressure by adding your first reading</p>
+        <button className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium">
+          Add First Reading
         </button>
       </div>
     </div>
   );
 
-  const renderSugarLevel = () => {
-    const records = getRecordsByType('sugar_level');
-    
-    return (
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <button 
-              onClick={() => setActiveTab('overview')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
-            </button>
-            <h3 className="text-lg font-semibold">Sugar Level Tracker</h3>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={() => setActiveTab('overview')}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-            >
-              <Home className="w-4 h-4" />
-              <span>Dashboard</span>
-            </button>
-            <button 
-              onClick={() => setShowAddForm(true)}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add Reading</span>
-            </button>
-          </div>
+  const renderSugarLevel = () => (
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <button 
+            onClick={() => setActiveTab('overview')}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-gray-600" />
+          </button>
+          <h3 className="text-lg font-semibold">Sugar Level Tracker</h3>
         </div>
-        
-        {showAddForm && renderSugarLevelForm()}
-        
-        <div className="mt-6">
-          {records.length > 0 ? (
-            <div className="space-y-4">
-              {records.reverse().map((record) => (
-                <div key={record.id} className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <p className="font-medium text-gray-800">{record.data.level} mg/dL</p>
-                        {(() => {
-                          const level = record.data.level;
-                          const testType = record.data.testType;
-                          
-                          let isHigh = false;
-                          let isLow = false;
-                          
-                          if (testType === 'fasting') {
-                            isHigh = level > 100;
-                            isLow = level < 70;
-                          } else if (testType === 'post_meal') {
-                            isHigh = level > 140;
-                            isLow = level < 70;
-                          } else {
-                            isHigh = level > 140;
-                            isLow = level < 70;
-                          }
-                          
-                          if (isHigh) {
-                            return <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">High</span>;
-                          } else if (isLow) {
-                            return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Low</span>;
-                          } else {
-                            return <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Normal</span>;
-                          }
-                        })()}
-                      </div>
-                      <p className="text-sm text-gray-600 capitalize">{record.data.testType.replace('_', ' ')}</p>
-                    </div>
-                    <span className="text-xs text-gray-500">{formatDate(record.date)}</span>
-                  </div>
-                  {record.data.notes && (
-                    <p className="text-sm text-gray-600 mt-2">{record.data.notes}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <Droplets className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h4 className="text-lg font-medium text-gray-600 mb-2">No readings yet</h4>
-              <p className="text-gray-500 mb-6">Start monitoring your sugar levels by adding your first reading</p>
-              <button 
-                onClick={() => setShowAddForm(true)}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium"
-              >
-                Add First Reading
-              </button>
-            </div>
-          )}
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => setActiveTab('overview')}
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            <span>Dashboard</span>
+          </button>
+          <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+            <Plus className="w-4 h-4" />
+            <span>Add Reading</span>
+          </button>
         </div>
-      </div>
-    );
-  };
-
-  const renderBabyMovementForm = () => (
-    <div className="bg-white rounded-lg p-6 border border-gray-200 mb-6">
-      <h4 className="text-lg font-semibold mb-4">Log Baby Movement</h4>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Movement Count</label>
-          <input
-            type="number"
-            min="0"
-            max="50"
-            value={babyMovementForm.count}
-            onChange={(e) => setBabyMovementForm({...babyMovementForm, count: e.target.value})}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-            placeholder="10"
-            required
-          />
-          <p className="text-xs text-gray-500 mt-1">Normal: 10+ movements in 2 hours</p>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
-          <input
-            type="number"
-            min="1"
-            max="240"
-            value={babyMovementForm.duration}
-            onChange={(e) => setBabyMovementForm({...babyMovementForm, duration: e.target.value})}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-            placeholder="30"
-          />
-          <p className="text-xs text-gray-500 mt-1">Time spent counting movements</p>
-        </div>
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Notes (optional)</label>
-        <textarea
-          value={babyMovementForm.notes}
-          onChange={(e) => setBabyMovementForm({...babyMovementForm, notes: e.target.value})}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-          rows={3}
-          placeholder="Describe the movements..."
-        />
       </div>
       
-      {/* Movement Status Indicator */}
-      {babyMovementForm.count && babyMovementForm.duration && (
-        <div className="mb-4 p-3 rounded-lg border">
-          {(() => {
-            const count = parseInt(babyMovementForm.count);
-            const duration = parseInt(babyMovementForm.duration);
-            const movementsPerHour = (count / duration) * 60;
-            
-            if (count < 10 && duration >= 120) {
-              return (
-                <div className="flex items-center space-x-2 text-red-600">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span className="text-sm font-medium">Low movement count - Contact your doctor</span>
-                </div>
-              );
-            } else if (count >= 10) {
-              return (
-                <div className="flex items-center space-x-2 text-green-600">
-                  <CheckCircle className="w-4 h-4" />
-                  <span className="text-sm font-medium">Good movement activity</span>
-                </div>
-              );
-            } else {
-              return (
-                <div className="flex items-center space-x-2 text-blue-600">
-                  <Activity className="w-4 h-4" />
-                  <span className="text-sm font-medium">Movement logged successfully</span>
-                </div>
-              );
-            }
-          })()}
-        </div>
-      )}
-      
-      <div className="flex space-x-3">
-        <button
-          onClick={() => {
-            if (babyMovementForm.count) {
-              addHealthRecord('baby_movement', {
-                count: parseInt(babyMovementForm.count),
-                duration: parseInt(babyMovementForm.duration) || 0,
-                notes: babyMovementForm.notes
-              });
-            }
-          }}
-          disabled={!babyMovementForm.count}
-          className={`px-4 py-2 rounded-lg flex items-center space-x-2 font-medium transition-colors ${
-            babyMovementForm.count
-              ? 'bg-pink-500 hover:bg-pink-600 text-white'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          <Save className="w-4 h-4" />
-          <span>Save Movement</span>
-        </button>
-        <button
-          onClick={() => setShowAddForm(false)}
-          className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2"
-        >
-          <X className="w-4 h-4" />
-          <span>Cancel</span>
+      <div className="text-center py-12">
+        <Droplets className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <h4 className="text-lg font-medium text-gray-600 mb-2">No readings yet</h4>
+        <p className="text-gray-500 mb-6">Start monitoring your sugar levels by adding your first reading</p>
+        <button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium">
+          Add First Reading
         </button>
       </div>
     </div>
   );
 
-  const renderBabyMovement = () => {
-    const records = getRecordsByType('baby_movement');
-    
-    return (
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <button 
-              onClick={() => setActiveTab('overview')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
-            </button>
-            <h3 className="text-lg font-semibold">Baby Movement Tracker</h3>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={() => setActiveTab('overview')}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-            >
-              <Home className="w-4 h-4" />
-              <span>Dashboard</span>
-            </button>
-            <button 
-              onClick={() => setShowAddForm(true)}
-              className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Log Movement</span>
-            </button>
-          </div>
+  const renderBabyMovement = () => (
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <button 
+            onClick={() => setActiveTab('overview')}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-gray-600" />
+          </button>
+          <h3 className="text-lg font-semibold">Baby Movement Tracker</h3>
         </div>
-        
-        {showAddForm && renderBabyMovementForm()}
-        
-        <div className="mt-6">
-          {records.length > 0 ? (
-            <div className="space-y-4">
-              {records.reverse().map((record) => (
-                <div key={record.id} className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <p className="font-medium text-gray-800">{record.data.count} movements</p>
-                        {(() => {
-                          const count = record.data.count;
-                          const duration = record.data.duration;
-                          
-                          if (count < 10 && duration >= 120) {
-                            return <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Low</span>;
-                          } else if (count >= 10) {
-                            return <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Good</span>;
-                          } else {
-                            return <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Logged</span>;
-                          }
-                        })()}
-                      </div>
-                      {record.data.duration > 0 && (
-                        <p className="text-sm text-gray-600">Duration: {record.data.duration} minutes</p>
-                      )}
-                    </div>
-                    <span className="text-xs text-gray-500">{formatDate(record.date)}</span>
-                  </div>
-                  {record.data.notes && (
-                    <p className="text-sm text-gray-600 mt-2">{record.data.notes}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <Baby className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h4 className="text-lg font-medium text-gray-600 mb-2">No movements logged yet</h4>
-              <p className="text-gray-500 mb-6">Start tracking your baby's movements to monitor their activity</p>
-              <button 
-                onClick={() => setShowAddForm(true)}
-                className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-lg font-medium"
-              >
-                Log First Movement
-              </button>
-            </div>
-          )}
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => setActiveTab('overview')}
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            <span>Dashboard</span>
+          </button>
+          <button className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+            <Plus className="w-4 h-4" />
+            <span>Log Movement</span>
+          </button>
         </div>
       </div>
-    );
-  };
+      
+      <div className="text-center py-12">
+        <Baby className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <h4 className="text-lg font-medium text-gray-600 mb-2">No movements logged yet</h4>
+        <p className="text-gray-500 mb-6">Start tracking your baby's movements to monitor their activity</p>
+        <button className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-lg font-medium">
+          Log First Movement
+        </button>
+      </div>
+    </div>
+  );
 
   const renderNutrition = () => (
     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
@@ -887,18 +278,24 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
           </button>
           <h3 className="text-lg font-semibold">Nutrition Chart</h3>
         </div>
-        <button 
-          onClick={() => setActiveTab('overview')}
-          className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-        >
-          <Home className="w-4 h-4" />
-          <span>Dashboard</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => setActiveTab('overview')}
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            <span>Dashboard</span>
+          </button>
+          <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+            <Plus className="w-4 h-4" />
+            <span>Log Meal</span>
+          </button>
+        </div>
       </div>
       
       <div className="space-y-4">
         <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4">
-          <h5 className="font-medium text-gray-800 mb-2">Week {patient.currentWeek || 0} Recommendations</h5>
+          <h5 className="font-medium text-gray-800 mb-2">Week {patient.currentWeek} Recommendations</h5>
           <ul className="space-y-2 text-sm text-gray-600">
             <li>• Increase iron-rich foods (spinach, lean meat)</li>
             <li>• 3-4 servings of dairy products daily</li>
@@ -909,8 +306,11 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
 
         <div className="text-center py-8">
           <ChefHat className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h4 className="text-lg font-medium text-gray-600 mb-2">Nutrition tracking coming soon</h4>
-          <p className="text-gray-500 mb-6">Follow the weekly recommendations above for now</p>
+          <h4 className="text-lg font-medium text-gray-600 mb-2">Start tracking your nutrition</h4>
+          <p className="text-gray-500 mb-6">Log your meals to ensure you're getting proper nutrition</p>
+          <button className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium">
+            Log First Meal
+          </button>
         </div>
       </div>
     </div>
@@ -928,19 +328,28 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
           </button>
           <h3 className="text-lg font-semibold">Doctor Connect</h3>
         </div>
-        <button 
-          onClick={() => setActiveTab('overview')}
-          className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-        >
-          <Home className="w-4 h-4" />
-          <span>Dashboard</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => setActiveTab('overview')}
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            <span>Dashboard</span>
+          </button>
+          <button className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+            <MessageCircle className="w-4 h-4" />
+            <span>New Message</span>
+          </button>
+        </div>
       </div>
       
       <div className="text-center py-12">
         <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h4 className="text-lg font-medium text-gray-600 mb-2">Doctor messaging coming soon</h4>
+        <h4 className="text-lg font-medium text-gray-600 mb-2">No messages yet</h4>
         <p className="text-gray-500 mb-6">Connect with your healthcare provider for guidance and support</p>
+        <button className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-medium">
+          Send First Message
+        </button>
       </div>
     </div>
   );
@@ -957,18 +366,24 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
           </button>
           <h3 className="text-lg font-semibold">Health Update</h3>
         </div>
-        <button 
-          onClick={() => setActiveTab('overview')}
-          className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-        >
-          <Home className="w-4 h-4" />
-          <span>Dashboard</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => setActiveTab('overview')}
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            <span>Dashboard</span>
+          </button>
+          <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+            <FileText className="w-4 h-4" />
+            <span>Submit Update</span>
+          </button>
+        </div>
       </div>
       
       <div className="space-y-6">
         <div className="bg-indigo-50 rounded-lg p-4">
-          <h4 className="font-medium text-indigo-800 mb-2">Week {patient.currentWeek || 0} Health Check</h4>
+          <h4 className="font-medium text-indigo-800 mb-2">Week {patient.currentWeek} Health Check</h4>
           <p className="text-sm text-indigo-600">Please complete your weekly health update to keep your doctor informed.</p>
         </div>
         
@@ -987,10 +402,6 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Overall Mood (1-10)</label>
             <input type="range" min="1" max="10" className="w-full" />
           </div>
-          
-          <button className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-3 rounded-lg font-medium">
-            Submit Health Update
-          </button>
         </div>
       </div>
     </div>
@@ -1052,13 +463,19 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
           </button>
           <h3 className="text-lg font-semibold">Emergency Contacts</h3>
         </div>
-        <button 
-          onClick={() => setActiveTab('overview')}
-          className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-        >
-          <Home className="w-4 h-4" />
-          <span>Dashboard</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => setActiveTab('overview')}
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            <span>Dashboard</span>
+          </button>
+          <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+            <Plus className="w-4 h-4" />
+            <span>Add Contact</span>
+          </button>
+        </div>
       </div>
       
       <div className="space-y-4">
@@ -1084,7 +501,10 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
           <div className="text-center py-8">
             <Phone className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h4 className="text-lg font-medium text-gray-600 mb-2">No emergency contacts</h4>
-            <p className="text-gray-500 mb-6">Emergency contacts were not set up during profile completion</p>
+            <p className="text-gray-500 mb-6">Add emergency contacts for quick access during emergencies</p>
+            <button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium">
+              Add First Contact
+            </button>
           </div>
         )}
         
@@ -1105,11 +525,6 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
   );
 
   const renderContent = () => {
-    // Reset form when switching tabs
-    if (showAddForm) {
-      setShowAddForm(false);
-    }
-
     switch (activeTab) {
       case 'blood-pressure':
         return renderBloodPressure();
