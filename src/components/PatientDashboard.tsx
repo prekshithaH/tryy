@@ -221,12 +221,21 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
       data
     };
 
-    const updatedRecords = [...healthRecords, newRecord];
+    const updatedRecords = [newRecord, ...healthRecords];
     setHealthRecords(updatedRecords);
     
-    // Save to localStorage
-    const updatedPatient = { ...patient, healthRecords: updatedRecords };
+    // Save only user-added records (not mock data) to localStorage
+    const userRecords = updatedRecords.filter(record => !record.id.startsWith('mock-'));
+    const updatedPatient = { ...patient, healthRecords: userRecords };
     localStorage.setItem('user', JSON.stringify(updatedPatient));
+    
+    // Update registered users as well
+    const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    const userIndex = existingUsers.findIndex((u: any) => u.id === patient.id);
+    if (userIndex !== -1) {
+      existingUsers[userIndex] = { ...existingUsers[userIndex], healthRecords: userRecords };
+      localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
+    }
     
     setShowAddForm(false);
     resetForms();
@@ -243,6 +252,50 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
     return healthRecords.filter(record => record.type === type);
   };
 
+  const getLatestRecord = (type: string) => {
+    const records = getRecordsByType(type);
+    return records.length > 0 ? records[0] : null;
+  };
+
+  const getAverageBloodPressure = () => {
+    const records = getRecordsByType('blood_pressure');
+    if (records.length === 0) return null;
+    
+    const total = records.reduce((acc, record) => ({
+      systolic: acc.systolic + record.data.systolic,
+      diastolic: acc.diastolic + record.data.diastolic,
+      heartRate: acc.heartRate + (record.data.heartRate || 0)
+    }), { systolic: 0, diastolic: 0, heartRate: 0 });
+    
+    return {
+      systolic: Math.round(total.systolic / records.length),
+      diastolic: Math.round(total.diastolic / records.length),
+      heartRate: Math.round(total.heartRate / records.length)
+    };
+  };
+
+  const getAverageSugarLevel = () => {
+    const records = getRecordsByType('sugar_level');
+    if (records.length === 0) return null;
+    
+    const total = records.reduce((acc, record) => acc + record.data.level, 0);
+    return Math.round(total / records.length);
+  };
+
+  const getAverageBabyMovement = () => {
+    const records = getRecordsByType('baby_movement');
+    if (records.length === 0) return null;
+    
+    const total = records.reduce((acc, record) => ({
+      count: acc.count + record.data.count,
+      duration: acc.duration + (record.data.duration || 0)
+    }), { count: 0, duration: 0 });
+    
+    return {
+      count: Math.round(total.count / records.length),
+      duration: Math.round(total.duration / records.length)
+    };
+  };
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -296,12 +349,29 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
         <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
         {healthRecords.length > 0 ? (
           <div className="space-y-3">
-            {healthRecords.slice(-3).reverse().map((record) => (
+            {healthRecords.slice(0, 5).map((record) => (
               <div key={record.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                 <div className="w-2 h-2 bg-blue-500 rounded-full" />
                 <div className="flex-1">
                   <p className="text-sm font-medium capitalize">{record.type.replace('_', ' ')}</p>
                   <p className="text-xs text-gray-500">{formatDate(record.date)}</p>
+                </div>
+                <div className="text-right">
+                  {record.type === 'blood_pressure' && (
+                    <p className="text-xs font-medium text-gray-700">
+                      {record.data.systolic}/{record.data.diastolic}
+                    </p>
+                  )}
+                  {record.type === 'sugar_level' && (
+                    <p className="text-xs font-medium text-gray-700">
+                      {record.data.level} mg/dL
+                    </p>
+                  )}
+                  {record.type === 'baby_movement' && (
+                    <p className="text-xs font-medium text-gray-700">
+                      {record.data.count} moves
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
@@ -391,6 +461,8 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
 
   const renderBloodPressure = () => {
     const records = getRecordsByType('blood_pressure');
+    const latestRecord = getLatestRecord('blood_pressure');
+    const averageData = getAverageBloodPressure();
     
     return (
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
@@ -424,10 +496,44 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
         
         {showAddForm && renderBloodPressureForm()}
         
+        {/* Statistics Cards */}
+        {records.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="bg-red-50 rounded-lg p-4 border border-red-100">
+              <h4 className="font-medium text-red-800 mb-2">Latest Reading</h4>
+              {latestRecord && (
+                <div>
+                  <p className="text-lg font-bold text-red-700">
+                    {latestRecord.data.systolic}/{latestRecord.data.diastolic} mmHg
+                  </p>
+                  {latestRecord.data.heartRate > 0 && (
+                    <p className="text-sm text-red-600">HR: {latestRecord.data.heartRate} bpm</p>
+                  )}
+                  <p className="text-xs text-red-500 mt-1">{formatDate(latestRecord.date)}</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+              <h4 className="font-medium text-blue-800 mb-2">Average ({records.length} readings)</h4>
+              {averageData && (
+                <div>
+                  <p className="text-lg font-bold text-blue-700">
+                    {averageData.systolic}/{averageData.diastolic} mmHg
+                  </p>
+                  {averageData.heartRate > 0 && (
+                    <p className="text-sm text-blue-600">Avg HR: {averageData.heartRate} bpm</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
         <div className="mt-6">
           {records.length > 0 ? (
             <div className="space-y-4">
-              {records.reverse().map((record) => (
+              {records.map((record) => (
                 <div key={record.id} className="bg-gray-50 rounded-lg p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div>
@@ -530,6 +636,8 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
 
   const renderSugarLevel = () => {
     const records = getRecordsByType('sugar_level');
+    const latestRecord = getLatestRecord('sugar_level');
+    const averageLevel = getAverageSugarLevel();
     
     return (
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
@@ -563,10 +671,36 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
         
         {showAddForm && renderSugarLevelForm()}
         
+        {/* Statistics Cards */}
+        {records.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+              <h4 className="font-medium text-blue-800 mb-2">Latest Reading</h4>
+              {latestRecord && (
+                <div>
+                  <p className="text-lg font-bold text-blue-700">{latestRecord.data.level} mg/dL</p>
+                  <p className="text-sm text-blue-600 capitalize">{latestRecord.data.testType.replace('_', ' ')}</p>
+                  <p className="text-xs text-blue-500 mt-1">{formatDate(latestRecord.date)}</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="bg-green-50 rounded-lg p-4 border border-green-100">
+              <h4 className="font-medium text-green-800 mb-2">Average ({records.length} readings)</h4>
+              {averageLevel && (
+                <div>
+                  <p className="text-lg font-bold text-green-700">{averageLevel} mg/dL</p>
+                  <p className="text-sm text-green-600">All test types</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
         <div className="mt-6">
           {records.length > 0 ? (
             <div className="space-y-4">
-              {records.reverse().map((record) => (
+              {records.map((record) => (
                 <div key={record.id} className="bg-gray-50 rounded-lg p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div>
@@ -663,6 +797,8 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
 
   const renderBabyMovement = () => {
     const records = getRecordsByType('baby_movement');
+    const latestRecord = getLatestRecord('baby_movement');
+    const averageData = getAverageBabyMovement();
     
     return (
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
@@ -696,10 +832,40 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
         
         {showAddForm && renderBabyMovementForm()}
         
+        {/* Statistics Cards */}
+        {records.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="bg-pink-50 rounded-lg p-4 border border-pink-100">
+              <h4 className="font-medium text-pink-800 mb-2">Latest Activity</h4>
+              {latestRecord && (
+                <div>
+                  <p className="text-lg font-bold text-pink-700">{latestRecord.data.count} movements</p>
+                  {latestRecord.data.duration > 0 && (
+                    <p className="text-sm text-pink-600">{latestRecord.data.duration} minutes</p>
+                  )}
+                  <p className="text-xs text-pink-500 mt-1">{formatDate(latestRecord.date)}</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
+              <h4 className="font-medium text-purple-800 mb-2">Average ({records.length} sessions)</h4>
+              {averageData && (
+                <div>
+                  <p className="text-lg font-bold text-purple-700">{averageData.count} movements</p>
+                  {averageData.duration > 0 && (
+                    <p className="text-sm text-purple-600">Avg: {averageData.duration} min</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
         <div className="mt-6">
           {records.length > 0 ? (
             <div className="space-y-4">
-              {records.reverse().map((record) => (
+              {records.map((record) => (
                 <div key={record.id} className="bg-gray-50 rounded-lg p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div>
