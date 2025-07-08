@@ -15,7 +15,8 @@ import {
   Home,
   ArrowLeft,
   Save,
-  X
+  X,
+  CheckCircle
 } from 'lucide-react';
 import { Patient, HealthRecord, BloodPressureData, SugarLevelData, BabyMovementData } from '../types';
 
@@ -130,6 +131,14 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
     const updatedPatient = { ...patient, healthRecords: updatedRecords };
     localStorage.setItem('user', JSON.stringify(updatedPatient));
     
+    // Also update in registered users
+    const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    const userIndex = existingUsers.findIndex((u: any) => u.id === patient.id);
+    if (userIndex !== -1) {
+      existingUsers[userIndex] = { ...existingUsers[userIndex], healthRecords: updatedRecords };
+      localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
+    }
+    
     setShowAddForm(false);
     resetForms();
   };
@@ -200,9 +209,19 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
           <div className="space-y-3">
             {healthRecords.slice(-3).reverse().map((record) => (
               <div key={record.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                <div className={`w-2 h-2 rounded-full ${
+                  record.type === 'blood_pressure' ? 'bg-red-500' :
+                  record.type === 'sugar_level' ? 'bg-blue-500' :
+                  record.type === 'baby_movement' ? 'bg-pink-500' :
+                  'bg-gray-500'
+                }`} />
                 <div className="flex-1">
                   <p className="text-sm font-medium capitalize">{record.type.replace('_', ' ')}</p>
+                  <p className="text-xs text-gray-400">
+                    {record.type === 'blood_pressure' && `${record.data.systolic}/${record.data.diastolic} mmHg`}
+                    {record.type === 'sugar_level' && `${record.data.level} mg/dL (${record.data.testType.replace('_', ' ')})`}
+                    {record.type === 'baby_movement' && `${record.data.count} movements`}
+                  </p>
                   <p className="text-xs text-gray-500">{formatDate(record.date)}</p>
                 </div>
               </div>
@@ -212,6 +231,12 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
           <div className="text-center py-8">
             <Activity className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">No activity yet. Start tracking your health!</p>
+            <button 
+              onClick={() => setActiveTab('blood-pressure')}
+              className="mt-3 text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Add your first reading
+            </button>
           </div>
         )}
       </div>
@@ -219,38 +244,49 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
   );
 
   const renderBloodPressureForm = () => (
-    <div className="bg-white rounded-lg p-6 border border-gray-200">
+    <div className="bg-white rounded-lg p-6 border border-gray-200 mb-6">
       <h4 className="text-lg font-semibold mb-4">Add Blood Pressure Reading</h4>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Systolic (mmHg)</label>
           <input
             type="number"
+            min="70"
+            max="200"
             value={bloodPressureForm.systolic}
             onChange={(e) => setBloodPressureForm({...bloodPressureForm, systolic: e.target.value})}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
             placeholder="120"
+            required
           />
+          <p className="text-xs text-gray-500 mt-1">Normal: 90-120 mmHg</p>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Diastolic (mmHg)</label>
           <input
             type="number"
+            min="40"
+            max="120"
             value={bloodPressureForm.diastolic}
             onChange={(e) => setBloodPressureForm({...bloodPressureForm, diastolic: e.target.value})}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
             placeholder="80"
+            required
           />
+          <p className="text-xs text-gray-500 mt-1">Normal: 60-80 mmHg</p>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Heart Rate (bpm)</label>
           <input
             type="number"
+            min="50"
+            max="150"
             value={bloodPressureForm.heartRate}
             onChange={(e) => setBloodPressureForm({...bloodPressureForm, heartRate: e.target.value})}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
             placeholder="72"
           />
+          <p className="text-xs text-gray-500 mt-1">Normal: 60-100 bpm</p>
         </div>
       </div>
       <div className="mb-4">
@@ -263,6 +299,40 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
           placeholder="Any additional notes..."
         />
       </div>
+      
+      {/* Reading Status Indicator */}
+      {bloodPressureForm.systolic && bloodPressureForm.diastolic && (
+        <div className="mb-4 p-3 rounded-lg border">
+          {(() => {
+            const systolic = parseInt(bloodPressureForm.systolic);
+            const diastolic = parseInt(bloodPressureForm.diastolic);
+            
+            if (systolic >= 140 || diastolic >= 90) {
+              return (
+                <div className="flex items-center space-x-2 text-red-600">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span className="text-sm font-medium">High Blood Pressure - Consult your doctor</span>
+                </div>
+              );
+            } else if (systolic < 90 || diastolic < 60) {
+              return (
+                <div className="flex items-center space-x-2 text-yellow-600">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span className="text-sm font-medium">Low Blood Pressure - Monitor closely</span>
+                </div>
+              );
+            } else {
+              return (
+                <div className="flex items-center space-x-2 text-green-600">
+                  <CheckCircle className="w-4 h-4" />
+                  <span className="text-sm font-medium">Normal Blood Pressure</span>
+                </div>
+              );
+            }
+          })()}
+        </div>
+      )}
+      
       <div className="flex space-x-3">
         <button
           onClick={() => {
@@ -275,7 +345,12 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
               });
             }
           }}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+          disabled={!bloodPressureForm.systolic || !bloodPressureForm.diastolic}
+          className={`px-4 py-2 rounded-lg flex items-center space-x-2 font-medium transition-colors ${
+            bloodPressureForm.systolic && bloodPressureForm.diastolic
+              ? 'bg-red-500 hover:bg-red-600 text-white'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
         >
           <Save className="w-4 h-4" />
           <span>Save Reading</span>
@@ -333,9 +408,23 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
                 <div key={record.id} className="bg-gray-50 rounded-lg p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <p className="font-medium text-gray-800">
+                      <div className="flex items-center space-x-2">
+                        <p className="font-medium text-gray-800">
                         {record.data.systolic}/{record.data.diastolic} mmHg
-                      </p>
+                        </p>
+                        {(() => {
+                          const systolic = record.data.systolic;
+                          const diastolic = record.data.diastolic;
+                          
+                          if (systolic >= 140 || diastolic >= 90) {
+                            return <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">High</span>;
+                          } else if (systolic < 90 || diastolic < 60) {
+                            return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Low</span>;
+                          } else {
+                            return <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Normal</span>;
+                          }
+                        })()}
+                      </div>
                       {record.data.heartRate > 0 && (
                         <p className="text-sm text-gray-600">Heart Rate: {record.data.heartRate} bpm</p>
                       )}
@@ -367,18 +456,26 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
   };
 
   const renderSugarLevelForm = () => (
-    <div className="bg-white rounded-lg p-6 border border-gray-200">
+    <div className="bg-white rounded-lg p-6 border border-gray-200 mb-6">
       <h4 className="text-lg font-semibold mb-4">Add Sugar Level Reading</h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Sugar Level (mg/dL)</label>
           <input
             type="number"
+            min="50"
+            max="400"
             value={sugarLevelForm.level}
             onChange={(e) => setSugarLevelForm({...sugarLevelForm, level: e.target.value})}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="100"
+            required
           />
+          <p className="text-xs text-gray-500 mt-1">
+            {sugarLevelForm.testType === 'fasting' ? 'Normal: 70-100 mg/dL' :
+             sugarLevelForm.testType === 'post_meal' ? 'Normal: <140 mg/dL' :
+             'Normal: 70-140 mg/dL'}
+          </p>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Test Type</label>
@@ -403,6 +500,54 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
           placeholder="Any additional notes..."
         />
       </div>
+      
+      {/* Sugar Level Status Indicator */}
+      {sugarLevelForm.level && (
+        <div className="mb-4 p-3 rounded-lg border">
+          {(() => {
+            const level = parseInt(sugarLevelForm.level);
+            const testType = sugarLevelForm.testType;
+            
+            let isHigh = false;
+            let isLow = false;
+            
+            if (testType === 'fasting') {
+              isHigh = level > 100;
+              isLow = level < 70;
+            } else if (testType === 'post_meal') {
+              isHigh = level > 140;
+              isLow = level < 70;
+            } else {
+              isHigh = level > 140;
+              isLow = level < 70;
+            }
+            
+            if (isHigh) {
+              return (
+                <div className="flex items-center space-x-2 text-red-600">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span className="text-sm font-medium">High Sugar Level - Consult your doctor</span>
+                </div>
+              );
+            } else if (isLow) {
+              return (
+                <div className="flex items-center space-x-2 text-yellow-600">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span className="text-sm font-medium">Low Sugar Level - Monitor closely</span>
+                </div>
+              );
+            } else {
+              return (
+                <div className="flex items-center space-x-2 text-green-600">
+                  <CheckCircle className="w-4 h-4" />
+                  <span className="text-sm font-medium">Normal Sugar Level</span>
+                </div>
+              );
+            }
+          })()}
+        </div>
+      )}
+      
       <div className="flex space-x-3">
         <button
           onClick={() => {
@@ -414,7 +559,12 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
               });
             }
           }}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+          disabled={!sugarLevelForm.level}
+          className={`px-4 py-2 rounded-lg flex items-center space-x-2 font-medium transition-colors ${
+            sugarLevelForm.level
+              ? 'bg-blue-500 hover:bg-blue-600 text-white'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
         >
           <Save className="w-4 h-4" />
           <span>Save Reading</span>
@@ -472,7 +622,35 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
                 <div key={record.id} className="bg-gray-50 rounded-lg p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <p className="font-medium text-gray-800">{record.data.level} mg/dL</p>
+                      <div className="flex items-center space-x-2">
+                        <p className="font-medium text-gray-800">{record.data.level} mg/dL</p>
+                        {(() => {
+                          const level = record.data.level;
+                          const testType = record.data.testType;
+                          
+                          let isHigh = false;
+                          let isLow = false;
+                          
+                          if (testType === 'fasting') {
+                            isHigh = level > 100;
+                            isLow = level < 70;
+                          } else if (testType === 'post_meal') {
+                            isHigh = level > 140;
+                            isLow = level < 70;
+                          } else {
+                            isHigh = level > 140;
+                            isLow = level < 70;
+                          }
+                          
+                          if (isHigh) {
+                            return <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">High</span>;
+                          } else if (isLow) {
+                            return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Low</span>;
+                          } else {
+                            return <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Normal</span>;
+                          }
+                        })()}
+                      </div>
                       <p className="text-sm text-gray-600 capitalize">{record.data.testType.replace('_', ' ')}</p>
                     </div>
                     <span className="text-xs text-gray-500">{formatDate(record.date)}</span>
@@ -502,28 +680,35 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
   };
 
   const renderBabyMovementForm = () => (
-    <div className="bg-white rounded-lg p-6 border border-gray-200">
+    <div className="bg-white rounded-lg p-6 border border-gray-200 mb-6">
       <h4 className="text-lg font-semibold mb-4">Log Baby Movement</h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Movement Count</label>
           <input
             type="number"
+            min="0"
+            max="50"
             value={babyMovementForm.count}
             onChange={(e) => setBabyMovementForm({...babyMovementForm, count: e.target.value})}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
             placeholder="10"
+            required
           />
+          <p className="text-xs text-gray-500 mt-1">Normal: 10+ movements in 2 hours</p>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
           <input
             type="number"
+            min="1"
+            max="240"
             value={babyMovementForm.duration}
             onChange={(e) => setBabyMovementForm({...babyMovementForm, duration: e.target.value})}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
             placeholder="30"
           />
+          <p className="text-xs text-gray-500 mt-1">Time spent counting movements</p>
         </div>
       </div>
       <div className="mb-4">
@@ -536,6 +721,41 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
           placeholder="Describe the movements..."
         />
       </div>
+      
+      {/* Movement Status Indicator */}
+      {babyMovementForm.count && babyMovementForm.duration && (
+        <div className="mb-4 p-3 rounded-lg border">
+          {(() => {
+            const count = parseInt(babyMovementForm.count);
+            const duration = parseInt(babyMovementForm.duration);
+            const movementsPerHour = (count / duration) * 60;
+            
+            if (count < 10 && duration >= 120) {
+              return (
+                <div className="flex items-center space-x-2 text-red-600">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span className="text-sm font-medium">Low movement count - Contact your doctor</span>
+                </div>
+              );
+            } else if (count >= 10) {
+              return (
+                <div className="flex items-center space-x-2 text-green-600">
+                  <CheckCircle className="w-4 h-4" />
+                  <span className="text-sm font-medium">Good movement activity</span>
+                </div>
+              );
+            } else {
+              return (
+                <div className="flex items-center space-x-2 text-blue-600">
+                  <Activity className="w-4 h-4" />
+                  <span className="text-sm font-medium">Movement logged successfully</span>
+                </div>
+              );
+            }
+          })()}
+        </div>
+      )}
+      
       <div className="flex space-x-3">
         <button
           onClick={() => {
@@ -547,7 +767,12 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
               });
             }
           }}
-          className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+          disabled={!babyMovementForm.count}
+          className={`px-4 py-2 rounded-lg flex items-center space-x-2 font-medium transition-colors ${
+            babyMovementForm.count
+              ? 'bg-pink-500 hover:bg-pink-600 text-white'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
         >
           <Save className="w-4 h-4" />
           <span>Save Movement</span>
@@ -605,7 +830,21 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
                 <div key={record.id} className="bg-gray-50 rounded-lg p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <p className="font-medium text-gray-800">{record.data.count} movements</p>
+                      <div className="flex items-center space-x-2">
+                        <p className="font-medium text-gray-800">{record.data.count} movements</p>
+                        {(() => {
+                          const count = record.data.count;
+                          const duration = record.data.duration;
+                          
+                          if (count < 10 && duration >= 120) {
+                            return <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Low</span>;
+                          } else if (count >= 10) {
+                            return <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Good</span>;
+                          } else {
+                            return <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Logged</span>;
+                          }
+                        })()}
+                      </div>
                       {record.data.duration > 0 && (
                         <p className="text-sm text-gray-600">Duration: {record.data.duration} minutes</p>
                       )}
