@@ -951,21 +951,298 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
         </button>
       </div>
       
-      <div className="space-y-4">
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4">
-          <h5 className="font-medium text-gray-800 mb-2">Week {patient.currentWeek || 0} Recommendations</h5>
-          <ul className="space-y-2 text-sm text-gray-600">
-            <li>• Increase iron-rich foods (spinach, lean meat)</li>
-            <li>• 3-4 servings of dairy products daily</li>
-            <li>• Include omega-3 fatty acids (fish, walnuts)</li>
-            <li>• Stay hydrated with 8-10 glasses of water</li>
-          </ul>
+      <div className="space-y-6">
+        {/* Current Week Recommendations */}
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">Week {patient.currentWeek || 0} Nutrition Focus</h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="bg-white rounded-lg p-4">
+              <h5 className="font-medium text-green-700 mb-2 flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                Key Nutrients This Week
+              </h5>
+              <ul className="space-y-1 text-sm text-gray-600">
+                <li>• Folic acid: 600-800 mcg daily</li>
+                <li>• Iron: 27 mg daily</li>
+                <li>• Calcium: 1000 mg daily</li>
+                <li>• Protein: 75-100g daily</li>
+              </ul>
+            </div>
+            
+            <div className="bg-white rounded-lg p-4">
+              <h5 className="font-medium text-blue-700 mb-2 flex items-center">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                Daily Hydration
+              </h5>
+              <ul className="space-y-1 text-sm text-gray-600">
+                <li>• Water: 8-10 glasses (2-2.5L)</li>
+                <li>• Coconut water: 1-2 glasses</li>
+                <li>• Fresh fruit juices: 1 glass</li>
+                <li>• Herbal teas: 1-2 cups</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        {/* Macronutrients */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">Macronutrients Breakdown</h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-red-50 rounded-lg p-4">
+              <h5 className="font-medium text-red-700 mb-3">Proteins (25-30%)</h5>
+              <div className="space-y-2 text-sm">
+                <p className="font-medium text-gray-700">Target: 75-100g daily</p>
+                <div className="text-gray-600">
+                  <p className="font-medium mb-1">Best Sources:</p>
+                  <ul className="space-y-1">
+                    <li>• Lean chicken, fish</li>
+                    <li>• Eggs, dairy products</li>
+                    <li>• Lentils, beans</li>
+                    <li>• Nuts, quinoa</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-yellow-50 rounded-lg p-4">
+              <h5 className="font-medium text-yellow-700 mb-3">Carbohydrates (45-65%)</h5>
+              <div className="space-y-2 text-sm">
+                <p className="font-medium text-gray-700">Target: 175-265g daily</p>
+                <div className="text-gray-600">
+                  <p className="font-medium mb-1">Best Sources:</p>
+                  <ul className="space-y-1">
+                    <li>• Whole grains, oats</li>
+                    <li>• Sweet potatoes</li>
+                    <li>• Fruits, vegetables</li>
+                    <li>• Brown rice, quinoa</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-green-50 rounded-lg p-4">
+              <h5 className="font-medium text-green-700 mb-3">Healthy Fats (20-35%)</h5>
+              <div className="space-y-2 text-sm">
+                <p className="font-medium text-gray-700">Target: 44-78g daily</p>
+                <div className="text-gray-600">
+                  <p className="font-medium mb-1">Best Sources:</p>
+                  <ul className="space-y-1">
+                    <li>• Avocados, olive oil</li>
+                    <li>• Nuts, seeds</li>
+                    <li>• Fatty fish (salmon)</li>
+                    <li>• Coconut oil</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Micronutrients */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">Essential Micronutrients</h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="bg-purple-50 rounded-lg p-4">
+              <h5 className="font-medium text-purple-700 mb-2">Folic Acid</h5>
+              <p className="text-sm text-gray-600 mb-2">600-800 mcg daily</p>
+              <p className="text-xs text-gray-500">Leafy greens, citrus fruits, fortified cereals</p>
+            </div>
+            
+            <div className="bg-red-50 rounded-lg p-4">
+              <h5 className="font-medium text-red-700 mb-2">Iron</h5>
+              <p className="text-sm text-gray-600 mb-2">27 mg daily</p>
+              <p className="text-xs text-gray-500">Red meat, spinach, lentils, tofu</p>
+            </div>
+            
+            <div className="bg-blue-50 rounded-lg p-4">
+              <h5 className="font-medium text-blue-700 mb-2">Calcium</h5>
+              <p className="text-sm text-gray-600 mb-2">1000 mg daily</p>
+              <p className="text-xs text-gray-500">Dairy, sardines, broccoli, almonds</p>
+            </div>
+            
+            <div className="bg-orange-50 rounded-lg p-4">
+              <h5 className="font-medium text-orange-700 mb-2">Vitamin D</h5>
+              <p className="text-sm text-gray-600 mb-2">600 IU daily</p>
+              <p className="text-xs text-gray-500">Fortified milk, fatty fish, sunlight</p>
+            </div>
+            
+            <div className="bg-teal-50 rounded-lg p-4">
+              <h5 className="font-medium text-teal-700 mb-2">Omega-3</h5>
+              <p className="text-sm text-gray-600 mb-2">200-300 mg DHA daily</p>
+              <p className="text-xs text-gray-500">Salmon, walnuts, chia seeds</p>
+            </div>
+            
+            <div className="bg-pink-50 rounded-lg p-4">
+              <h5 className="font-medium text-pink-700 mb-2">Vitamin B12</h5>
+              <p className="text-sm text-gray-600 mb-2">2.6 mcg daily</p>
+              <p className="text-xs text-gray-500">Meat, fish, dairy, fortified foods</p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Foods to Avoid by Trimester */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">Foods to Avoid During Pregnancy</h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-red-50 rounded-lg p-4">
+              <h5 className="font-medium text-red-700 mb-3">First Trimester (1-12 weeks)</h5>
+              <ul className="space-y-1 text-sm text-gray-600">
+                <li>• Raw or undercooked meat</li>
+                <li>• Raw eggs and mayonnaise</li>
+                <li>• High-mercury fish (shark, swordfish)</li>
+                <li>• Unpasteurized dairy products</li>
+                <li>• Alcohol and smoking</li>
+                <li>• Excessive caffeine (>200mg/day)</li>
+              </ul>
+            </div>
+            
+            <div className="bg-orange-50 rounded-lg p-4">
+              <h5 className="font-medium text-orange-700 mb-3">Second Trimester (13-27 weeks)</h5>
+              <ul className="space-y-1 text-sm text-gray-600">
+                <li>• Continue first trimester restrictions</li>
+                <li>• Deli meats (unless heated)</li>
+                <li>• Raw sprouts</li>
+                <li>• Unwashed fruits/vegetables</li>
+                <li>• Herbal supplements without approval</li>
+                <li>• Artificial sweeteners in excess</li>
+              </ul>
+            </div>
+            
+            <div className="bg-yellow-50 rounded-lg p-4">
+              <h5 className="font-medium text-yellow-700 mb-3">Third Trimester (28-40 weeks)</h5>
+              <ul className="space-y-1 text-sm text-gray-600">
+                <li>• All previous restrictions</li>
+                <li>• Excessive salt/sodium</li>
+                <li>• Large amounts of liver</li>
+                <li>• Energy drinks</li>
+                <li>• Raw seafood (sushi, oysters)</li>
+                <li>• Processed/junk foods</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        {/* Exercise Recommendations */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">Recommended Exercises by Trimester</h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-green-50 rounded-lg p-4">
+              <h5 className="font-medium text-green-700 mb-3">First Trimester</h5>
+              <div className="space-y-3 text-sm">
+                <div>
+                  <p className="font-medium text-gray-700 mb-1">Safe Activities:</p>
+                  <ul className="space-y-1 text-gray-600">
+                    <li>• Walking (30 min daily)</li>
+                    <li>• Swimming</li>
+                    <li>• Prenatal yoga</li>
+                    <li>• Light strength training</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-700 mb-1">Benefits:</p>
+                  <p className="text-gray-600">Reduces nausea, improves energy</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-blue-50 rounded-lg p-4">
+              <h5 className="font-medium text-blue-700 mb-3">Second Trimester</h5>
+              <div className="space-y-3 text-sm">
+                <div>
+                  <p className="font-medium text-gray-700 mb-1">Safe Activities:</p>
+                  <ul className="space-y-1 text-gray-600">
+                    <li>• Brisk walking</li>
+                    <li>• Water aerobics</li>
+                    <li>• Modified pilates</li>
+                    <li>• Stationary cycling</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-700 mb-1">Benefits:</p>
+                  <p className="text-gray-600">Peak energy, easier movement</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-purple-50 rounded-lg p-4">
+              <h5 className="font-medium text-purple-700 mb-3">Third Trimester</h5>
+              <div className="space-y-3 text-sm">
+                <div>
+                  <p className="font-medium text-gray-700 mb-1">Safe Activities:</p>
+                  <ul className="space-y-1 text-gray-600">
+                    <li>• Gentle walking</li>
+                    <li>• Prenatal yoga</li>
+                    <li>• Pelvic floor exercises</li>
+                    <li>• Breathing exercises</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-700 mb-1">Benefits:</p>
+                  <p className="text-gray-600">Prepares for labor, reduces discomfort</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4 bg-red-50 rounded-lg p-4 border border-red-200">
+            <h6 className="font-medium text-red-700 mb-2">⚠️ Exercises to Avoid:</h6>
+            <ul className="text-sm text-red-600 space-y-1">
+              <li>• Contact sports • High-impact activities • Hot yoga • Lying flat on back (after 1st trimester)</li>
+              <li>• Heavy lifting • Activities with fall risk • Scuba diving • High-altitude activities</li>
+            </ul>
+          </div>
         </div>
 
-        <div className="text-center py-8">
-          <ChefHat className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h4 className="text-lg font-medium text-gray-600 mb-2">Nutrition tracking coming soon</h4>
-          <p className="text-gray-500 mb-6">Follow the weekly recommendations above for now</p>
+        {/* Weekly Meal Plan Suggestion */}
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">Sample Daily Meal Plan</h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white rounded-lg p-4">
+              <h5 className="font-medium text-purple-700 mb-2">Breakfast</h5>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Oatmeal with berries</li>
+                <li>• Greek yogurt</li>
+                <li>• Orange juice</li>
+                <li>• Prenatal vitamin</li>
+              </ul>
+            </div>
+            
+            <div className="bg-white rounded-lg p-4">
+              <h5 className="font-medium text-blue-700 mb-2">Lunch</h5>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Grilled chicken salad</li>
+                <li>• Whole grain bread</li>
+                <li>• Avocado slices</li>
+                <li>• Water with lemon</li>
+              </ul>
+            </div>
+            
+            <div className="bg-white rounded-lg p-4">
+              <h5 className="font-medium text-green-700 mb-2">Snacks</h5>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Apple with almond butter</li>
+                <li>• Cheese and crackers</li>
+                <li>• Smoothie with spinach</li>
+                <li>• Mixed nuts</li>
+              </ul>
+            </div>
+            
+            <div className="bg-white rounded-lg p-4">
+              <h5 className="font-medium text-orange-700 mb-2">Dinner</h5>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Baked salmon</li>
+                <li>• Quinoa pilaf</li>
+                <li>• Steamed broccoli</li>
+                <li>• Herbal tea</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>
