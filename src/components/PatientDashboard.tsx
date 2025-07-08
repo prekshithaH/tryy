@@ -398,6 +398,8 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
             onChange={(e) => setBloodPressureForm({...bloodPressureForm, systolic: e.target.value})}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
             placeholder="120"
+            min="60"
+            max="250"
           />
         </div>
         <div>
@@ -408,6 +410,8 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
             onChange={(e) => setBloodPressureForm({...bloodPressureForm, diastolic: e.target.value})}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
             placeholder="80"
+            min="40"
+            max="150"
           />
         </div>
         <div>
@@ -418,6 +422,8 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
             onChange={(e) => setBloodPressureForm({...bloodPressureForm, heartRate: e.target.value})}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
             placeholder="72"
+            min="40"
+            max="200"
           />
         </div>
       </div>
@@ -434,15 +440,22 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
       <div className="flex space-x-3">
         <button
           onClick={() => {
-            if (bloodPressureForm.systolic && bloodPressureForm.diastolic) {
+            const systolic = parseInt(bloodPressureForm.systolic);
+            const diastolic = parseInt(bloodPressureForm.diastolic);
+            const heartRate = bloodPressureForm.heartRate ? parseInt(bloodPressureForm.heartRate) : 0;
+            
+            if (systolic && diastolic && systolic > 0 && diastolic > 0) {
               addHealthRecord('blood_pressure', {
-                systolic: parseInt(bloodPressureForm.systolic),
-                diastolic: parseInt(bloodPressureForm.diastolic),
-                heartRate: parseInt(bloodPressureForm.heartRate) || 0,
+                systolic,
+                diastolic,
+                heartRate,
                 notes: bloodPressureForm.notes
               });
+            } else {
+              alert('Please enter valid systolic and diastolic values');
             }
           }}
+          disabled={!bloodPressureForm.systolic || !bloodPressureForm.diastolic}
           className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
         >
           <Save className="w-4 h-4" />
@@ -582,6 +595,8 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
             onChange={(e) => setSugarLevelForm({...sugarLevelForm, level: e.target.value})}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="100"
+            min="50"
+            max="400"
           />
         </div>
         <div>
@@ -610,14 +625,19 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
       <div className="flex space-x-3">
         <button
           onClick={() => {
-            if (sugarLevelForm.level) {
+            const level = parseInt(sugarLevelForm.level);
+            
+            if (level && level > 0) {
               addHealthRecord('sugar_level', {
-                level: parseInt(sugarLevelForm.level),
+                level,
                 testType: sugarLevelForm.testType,
                 notes: sugarLevelForm.notes
               });
+            } else {
+              alert('Please enter a valid sugar level');
             }
           }}
+          disabled={!sugarLevelForm.level}
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
         >
           <Save className="w-4 h-4" />
@@ -745,6 +765,8 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
             onChange={(e) => setBabyMovementForm({...babyMovementForm, count: e.target.value})}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
             placeholder="10"
+            min="1"
+            max="100"
           />
         </div>
         <div>
@@ -755,6 +777,8 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
             onChange={(e) => setBabyMovementForm({...babyMovementForm, duration: e.target.value})}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
             placeholder="30"
+            min="1"
+            max="300"
           />
         </div>
       </div>
@@ -771,14 +795,20 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
       <div className="flex space-x-3">
         <button
           onClick={() => {
-            if (babyMovementForm.count) {
+            const count = parseInt(babyMovementForm.count);
+            const duration = babyMovementForm.duration ? parseInt(babyMovementForm.duration) : 0;
+            
+            if (count && count > 0) {
               addHealthRecord('baby_movement', {
-                count: parseInt(babyMovementForm.count),
-                duration: parseInt(babyMovementForm.duration) || 0,
+                count,
+                duration,
                 notes: babyMovementForm.notes
               });
+            } else {
+              alert('Please enter a valid movement count');
             }
           }}
+          disabled={!babyMovementForm.count}
           className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
         >
           <Save className="w-4 h-4" />
