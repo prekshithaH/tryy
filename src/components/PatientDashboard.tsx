@@ -1160,11 +1160,6 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
   );
 
   const renderContent = () => {
-    // Reset form when switching tabs
-    if (showAddForm) {
-      setShowAddForm(false);
-    }
-
     switch (activeTab) {
       case 'blood-pressure':
         return renderBloodPressure();
@@ -1190,14 +1185,16 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">
-            Welcome back, {patient.name}
-          </h1>
-          <p className="text-gray-600">
-            Track your pregnancy journey and stay connected with your healthcare team
-          </p>
-        </div>
+        {activeTab === 'overview' && (
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">
+              Welcome back, {patient.name}
+            </h1>
+            <p className="text-gray-600">
+              Track your pregnancy journey and stay connected with your healthcare team
+            </p>
+          </div>
+        )}
 
         {renderContent()}
       </div>
