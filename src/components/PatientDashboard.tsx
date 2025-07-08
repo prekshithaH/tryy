@@ -26,8 +26,106 @@ interface PatientDashboardProps {
 const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showAddForm, setShowAddForm] = useState(false);
-  const [healthRecords, setHealthRecords] = useState<HealthRecord[]>(patient.healthRecords || []);
+  
+  // Mock health records for demonstration
+  const mockHealthRecords: HealthRecord[] = [
+    {
+      id: 'mock-1',
+      patientId: patient.id,
+      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+      type: 'blood_pressure',
+      data: {
+        systolic: 118,
+        diastolic: 78,
+        heartRate: 72,
+        notes: 'Morning reading after breakfast'
+      }
+    },
+    {
+      id: 'mock-2',
+      patientId: patient.id,
+      date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+      type: 'sugar_level',
+      data: {
+        level: 95,
+        testType: 'fasting',
+        notes: 'Fasting reading before breakfast'
+      }
+    },
+    {
+      id: 'mock-3',
+      patientId: patient.id,
+      date: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
+      type: 'baby_movement',
+      data: {
+        count: 12,
+        duration: 45,
+        notes: 'Very active after lunch, strong kicks'
+      }
+    },
+    {
+      id: 'mock-4',
+      patientId: patient.id,
+      date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days ago
+      type: 'blood_pressure',
+      data: {
+        systolic: 122,
+        diastolic: 82,
+        heartRate: 75,
+        notes: 'Evening reading, felt a bit tired'
+      }
+    },
+    {
+      id: 'mock-5',
+      patientId: patient.id,
+      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
+      type: 'sugar_level',
+      data: {
+        level: 140,
+        testType: 'post_meal',
+        notes: '2 hours after dinner'
+      }
+    },
+    {
+      id: 'mock-6',
+      patientId: patient.id,
+      date: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
+      type: 'baby_movement',
+      data: {
+        count: 8,
+        duration: 30,
+        notes: 'Gentle movements during rest time'
+      }
+    },
+    {
+      id: 'mock-7',
+      patientId: patient.id,
+      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week ago
+      type: 'blood_pressure',
+      data: {
+        systolic: 115,
+        diastolic: 75,
+        heartRate: 68,
+        notes: 'Good reading after morning walk'
+      }
+    },
+    {
+      id: 'mock-8',
+      patientId: patient.id,
+      date: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(), // 8 days ago
+      type: 'sugar_level',
+      data: {
+        level: 88,
+        testType: 'random',
+        notes: 'Mid-afternoon check'
+      }
+    }
+  ];
 
+  const [healthRecords, setHealthRecords] = useState<HealthRecord[]>([
+    ...mockHealthRecords,
+    ...(patient.healthRecords || [])
+  ]);
   // Form states
   const [bloodPressureForm, setBloodPressureForm] = useState({
     systolic: '',
