@@ -1096,7 +1096,7 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
                 <li>• High-mercury fish (shark, swordfish)</li>
                 <li>• Unpasteurized dairy products</li>
                 <li>• Alcohol and smoking</li>
-                <li>• Excessive caffeine (>200mg/day)</li>
+                <li>• Excessive caffeine ({'>'}200mg/day)</li>
               </ul>
             </div>
             
