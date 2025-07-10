@@ -854,16 +854,16 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
             </button>
             <button
               onClick={() => {
-                setActiveTab('education');
+                setActiveTab('nutrition');
                 setShowAddRecord(false);
               }}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === 'education'
+                activeTab === 'nutrition'
                   ? 'bg-pink-500 text-white'
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              Education
+              Nutrition Chat
             </button>
           </nav>
         </div>
