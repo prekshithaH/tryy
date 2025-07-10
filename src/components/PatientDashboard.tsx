@@ -788,258 +788,176 @@ const PatientDashboard: React.FC<PatientDashboardProps> = ({ patient }) => {
     const currentWeek = patient.currentWeek || 1;
     const currentMonth = Math.ceil(currentWeek / 4.33);
     
-    const nutritionData = {
-      macronutrients: [
-        {
-          name: "Protein",
-          dailyNeed: "71g",
-          importance: "Essential for baby's growth and development",
-          sources: ["Lean meats", "Fish", "Eggs", "Beans", "Nuts", "Dairy products"]
-        },
-        {
-          name: "Carbohydrates",
-          dailyNeed: "175g",
-          importance: "Primary energy source for you and your baby",
-          sources: ["Whole grains", "Fruits", "Vegetables", "Legumes"]
-        },
-        {
-          name: "Healthy Fats",
-          dailyNeed: "20-35% of calories",
-          importance: "Brain development and nutrient absorption",
-          sources: ["Avocados", "Nuts", "Olive oil", "Fatty fish", "Seeds"]
-        }
-      ],
-      micronutrients: [
-        {
-          name: "Folic Acid",
-          dailyNeed: "600mcg",
-          importance: "Prevents neural tube defects",
-          sources: ["Leafy greens", "Fortified cereals", "Citrus fruits", "Beans"]
-        },
-        {
-          name: "Iron",
-          dailyNeed: "27mg",
-          importance: "Prevents anemia and supports increased blood volume",
-          sources: ["Red meat", "Spinach", "Lentils", "Fortified cereals"]
-        },
-        {
-          name: "Calcium",
-          dailyNeed: "1000mg",
-          importance: "Baby's bone and teeth development",
-          sources: ["Dairy products", "Leafy greens", "Fortified foods", "Sardines"]
-        },
-        {
-          name: "DHA (Omega-3)",
-          dailyNeed: "200mg",
-          importance: "Brain and eye development",
-          sources: ["Fatty fish", "Walnuts", "Flaxseeds", "DHA supplements"]
-        }
-      ],
-      foodsToAvoid: {
-        1: ["Raw fish/sushi", "Unpasteurized dairy", "High-mercury fish", "Raw eggs", "Alcohol"],
-        2: ["Deli meats", "Soft cheeses", "Raw sprouts", "Unwashed produce", "Caffeine (limit)"],
-        3: ["Large fish (shark, swordfish)", "Raw shellfish", "Unpasteurized juices", "Herbal teas (some)", "Artificial sweeteners"],
-        4: ["High-sodium foods", "Processed meats", "Raw cookie dough", "Unwashed fruits/vegetables", "Excess sugar"],
-        5: ["Spicy foods (if causing heartburn)", "Carbonated drinks", "High-fat foods", "Large meals", "Late-night eating"],
-        6: ["Foods causing gas", "Very cold drinks", "Excessive dairy", "Fried foods", "Citrus (if causing heartburn)"],
-        7: ["Salty snacks", "Sugary drinks", "Heavy meals", "Foods causing bloating", "Excess fluids before bed"],
-        8: ["Large portions", "Spicy foods", "Acidic foods", "Carbonated beverages", "Foods high in sodium"],
-        9: ["Hard-to-digest foods", "Very sweet foods", "Excess fluids", "Large meals", "Foods causing discomfort"]
-      },
-      exercises: {
-        1: ["Walking (20-30 min)", "Swimming", "Prenatal yoga", "Pelvic tilts", "Deep breathing"],
-        2: ["Light cardio", "Stretching", "Kegel exercises", "Modified planks", "Arm circles"],
-        3: ["Prenatal pilates", "Stationary cycling", "Wall push-ups", "Leg lifts", "Cat-cow stretches"],
-        4: ["Water aerobics", "Modified squats", "Prenatal dance", "Shoulder rolls", "Ankle circles"],
-        5: ["Walking", "Swimming", "Prenatal yoga", "Pelvic floor exercises", "Gentle stretching"],
-        6: ["Low-impact cardio", "Prenatal strength training", "Balance exercises", "Hip circles", "Breathing exercises"],
-        7: ["Walking", "Swimming", "Prenatal yoga", "Wall sits", "Calf raises"],
-        8: ["Gentle walking", "Water exercises", "Stretching", "Pelvic tilts", "Relaxation techniques"],
-        9: ["Light walking", "Prenatal yoga", "Breathing exercises", "Gentle stretching", "Meditation"]
-      }
+    const foodsToAvoidByMonth = {
+      1: ["Raw fish/sushi", "Unpasteurized dairy", "High-mercury fish", "Raw eggs", "Alcohol"],
+      2: ["Deli meats", "Soft cheeses", "Raw sprouts", "Unwashed produce", "Caffeine (limit)"],
+      3: ["Large fish (shark, swordfish)", "Raw shellfish", "Unpasteurized juices", "Herbal teas (some)", "Artificial sweeteners"],
+      4: ["High-sodium foods", "Processed meats", "Raw cookie dough", "Unwashed fruits/vegetables", "Excess sugar"],
+      5: ["Spicy foods (if causing heartburn)", "Carbonated drinks", "High-fat foods", "Large meals", "Late-night eating"],
+      6: ["Foods causing gas", "Very cold drinks", "Excessive dairy", "Fried foods", "Citrus (if causing heartburn)"],
+      7: ["Salty snacks", "Sugary drinks", "Heavy meals", "Foods causing bloating", "Excess fluids before bed"],
+      8: ["Large portions", "Spicy foods", "Acidic foods", "Carbonated beverages", "Foods high in sodium"],
+      9: ["Hard-to-digest foods", "Very sweet foods", "Excess fluids", "Large meals", "Foods causing discomfort"]
+    };
+
+    const exercisesByMonth = {
+      1: ["Walking (20-30 min)", "Swimming", "Prenatal yoga", "Pelvic tilts", "Deep breathing"],
+      2: ["Light cardio", "Stretching", "Kegel exercises", "Modified planks", "Arm circles"],
+      3: ["Prenatal pilates", "Stationary cycling", "Wall push-ups", "Leg lifts", "Cat-cow stretches"],
+      4: ["Water aerobics", "Modified squats", "Prenatal dance", "Shoulder rolls", "Ankle circles"],
+      5: ["Walking", "Swimming", "Prenatal yoga", "Pelvic floor exercises", "Gentle stretching"],
+      6: ["Low-impact cardio", "Prenatal strength training", "Balance exercises", "Hip circles", "Breathing exercises"],
+      7: ["Walking", "Swimming", "Prenatal yoga", "Wall sits", "Calf raises"],
+      8: ["Gentle walking", "Water exercises", "Stretching", "Pelvic tilts", "Relaxation techniques"],
+      9: ["Light walking", "Prenatal yoga", "Breathing exercises", "Gentle stretching", "Meditation"]
     };
 
     return (
       <div className="space-y-6">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-green-500 to-teal-600 rounded-xl p-6 text-white">
-          <h2 className="text-2xl font-bold mb-2">Nutrition Chat - Month {currentMonth}</h2>
-          <p className="text-green-100">Personalized nutrition guidance for your pregnancy journey</p>
-        </div>
-
-        {/* Macronutrients */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-              <Weight className="w-5 h-5 text-blue-600" />
+        {/* Main Grid Layout - Same as Dashboard */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Macronutrients Card */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+              <Weight className="w-6 h-6 text-blue-600" />
             </div>
-            Macronutrients
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {nutritionData.macronutrients.map((macro, index) => (
-              <div key={index} className="bg-blue-50 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-800 mb-2">{macro.name}</h4>
-                <p className="text-sm text-blue-600 mb-2">Daily Need: <span className="font-bold">{macro.dailyNeed}</span></p>
-                <p className="text-sm text-gray-700 mb-3">{macro.importance}</p>
-                <div>
-                  <p className="text-xs font-medium text-gray-600 mb-1">Good Sources:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {macro.sources.map((source, idx) => (
-                      <span key={idx} className="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded-full">
-                        {source}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+            <h3 className="font-semibold text-gray-800 mb-2">Macronutrients</h3>
+            <p className="text-sm text-gray-600 mb-4">Essential daily nutrients</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Protein:</span>
+                <span className="font-medium">71g</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Micronutrients */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-              <Droplets className="w-5 h-5 text-purple-600" />
-            </div>
-            Essential Micronutrients
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {nutritionData.micronutrients.map((micro, index) => (
-              <div key={index} className="bg-purple-50 rounded-lg p-4">
-                <h4 className="font-semibold text-purple-800 mb-2">{micro.name}</h4>
-                <p className="text-sm text-purple-600 mb-2">Daily Need: <span className="font-bold">{micro.dailyNeed}</span></p>
-                <p className="text-sm text-gray-700 mb-3">{micro.importance}</p>
-                <div>
-                  <p className="text-xs font-medium text-gray-600 mb-1">Good Sources:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {micro.sources.map((source, idx) => (
-                      <span key={idx} className="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded-full">
-                        {source}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Carbs:</span>
+                <span className="font-medium">175g</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Foods to Avoid This Month */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
-              <AlertCircle className="w-5 h-5 text-red-600" />
+              <div className="flex justify-between">
+                <span className="text-gray-600">Healthy Fats:</span>
+                <span className="font-medium">20-35%</span>
+              </div>
             </div>
-            Foods to Avoid - Month {currentMonth}
-          </h3>
-          <div className="bg-red-50 rounded-lg p-4">
-            <p className="text-sm text-gray-700 mb-3">
-              During month {currentMonth} of pregnancy, it's especially important to avoid these foods:
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {nutritionData.foodsToAvoid[currentMonth as keyof typeof nutritionData.foodsToAvoid]?.map((food, index) => (
-                <span key={index} className="bg-red-200 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
+          </div>
+
+          {/* Micronutrients Card */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+              <Droplets className="w-6 h-6 text-purple-600" />
+            </div>
+            <h3 className="font-semibold text-gray-800 mb-2">Micronutrients</h3>
+            <p className="text-sm text-gray-600 mb-4">Key vitamins & minerals</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Folic Acid:</span>
+                <span className="font-medium">600mcg</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Iron:</span>
+                <span className="font-medium">27mg</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Calcium:</span>
+                <span className="font-medium">1000mg</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Foods to Avoid Card */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+              <AlertCircle className="w-6 h-6 text-red-600" />
+            </div>
+            <h3 className="font-semibold text-gray-800 mb-2">Foods to Avoid</h3>
+            <p className="text-sm text-gray-600 mb-4">Month {currentMonth} restrictions</p>
+            <div className="space-y-1">
+              {foodsToAvoidByMonth[currentMonth as keyof typeof foodsToAvoidByMonth]?.slice(0, 3).map((food, index) => (
+                <div key={index} className="text-xs bg-red-50 text-red-700 px-2 py-1 rounded">
                   {food}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Recommended Exercises */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-              <Activity className="w-5 h-5 text-green-600" />
-            </div>
-            Recommended Exercises - Month {currentMonth}
-          </h3>
-          <div className="bg-green-50 rounded-lg p-4">
-            <p className="text-sm text-gray-700 mb-3">
-              Safe and beneficial exercises for month {currentMonth} of your pregnancy:
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {nutritionData.exercises[currentMonth as keyof typeof nutritionData.exercises]?.map((exercise, index) => (
-                <div key={index} className="bg-white rounded-lg p-3 border border-green-200">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-gray-800">{exercise}</span>
-                  </div>
                 </div>
               ))}
-            </div>
-            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-xs text-yellow-800">
-                <strong>Important:</strong> Always consult with your healthcare provider before starting any new exercise routine during pregnancy.
-              </p>
+              <div className="text-xs text-gray-500 mt-2">
+                +{(foodsToAvoidByMonth[currentMonth as keyof typeof foodsToAvoidByMonth]?.length || 0) - 3} more
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Hydration Reminder */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <div className="w-8 h-8 bg-cyan-100 rounded-lg flex items-center justify-center mr-3">
-              <Droplets className="w-5 h-5 text-cyan-600" />
+          {/* Recommended Exercises Card */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+              <Activity className="w-6 h-6 text-green-600" />
             </div>
-            Hydration Goals
-          </h3>
-          <div className="bg-cyan-50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-lg font-semibold text-cyan-800">Daily Water Goal</span>
-              <span className="text-2xl font-bold text-cyan-600">8-10 glasses</span>
-            </div>
-            <p className="text-sm text-gray-700 mb-3">
-              Staying well-hydrated is crucial during pregnancy for maintaining amniotic fluid levels, preventing constipation, and supporting increased blood volume.
-            </p>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="font-medium text-gray-700 mb-1">Benefits:</p>
-                <ul className="text-gray-600 space-y-1">
-                  <li>• Reduces morning sickness</li>
-                  <li>• Prevents urinary tract infections</li>
-                  <li>• Helps with digestion</li>
-                </ul>
-              </div>
-              <div>
-                <p className="font-medium text-gray-700 mb-1">Tips:</p>
-                <ul className="text-gray-600 space-y-1">
-                  <li>• Drink small amounts frequently</li>
-                  <li>• Add lemon for flavor</li>
-                  <li>• Monitor urine color</li>
-                </ul>
+            <h3 className="font-semibold text-gray-800 mb-2">Safe Exercises</h3>
+            <p className="text-sm text-gray-600 mb-4">Month {currentMonth} activities</p>
+            <div className="space-y-1">
+              {exercisesByMonth[currentMonth as keyof typeof exercisesByMonth]?.slice(0, 3).map((exercise, index) => (
+                <div key={index} className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
+                  {exercise}
+                </div>
+              ))}
+              <div className="text-xs text-gray-500 mt-2">
+                +{(exercisesByMonth[currentMonth as keyof typeof exercisesByMonth]?.length || 0) - 3} more
               </div>
             </div>
           </div>
         </div>
 
-        {/* Quick Tips */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
-              <CheckCircle className="w-5 h-5 text-yellow-600" />
+        {/* Second Row - Detailed Information */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Hydration & Tips Card */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="w-12 h-12 bg-cyan-100 rounded-lg flex items-center justify-center mb-4">
+              <Droplets className="w-6 h-6 text-cyan-600" />
             </div>
-            Quick Nutrition Tips
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-yellow-50 rounded-lg p-4">
-              <h4 className="font-semibold text-yellow-800 mb-2">Meal Planning</h4>
-              <ul className="text-sm text-gray-700 space-y-1">
-                <li>• Eat small, frequent meals</li>
-                <li>• Include protein in every meal</li>
-                <li>• Choose whole grains over refined</li>
-                <li>• Prep healthy snacks in advance</li>
-              </ul>
+            <h3 className="font-semibold text-gray-800 mb-4">Hydration & Tips</h3>
+            
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">Daily Water Goal</span>
+                <span className="text-lg font-bold text-cyan-600">8-10 glasses</span>
+              </div>
+              <div className="w-full bg-cyan-100 rounded-full h-2">
+                <div className="bg-cyan-500 h-2 rounded-full" style={{ width: '75%' }}></div>
+              </div>
+              <p className="text-xs text-gray-600 mt-1">Stay hydrated for healthy pregnancy</p>
             </div>
-            <div className="bg-yellow-50 rounded-lg p-4">
-              <h4 className="font-semibold text-yellow-800 mb-2">Managing Symptoms</h4>
-              <ul className="text-sm text-gray-700 space-y-1">
-                <li>• Ginger for morning sickness</li>
-                <li>• Fiber-rich foods for constipation</li>
-                <li>• Small meals for heartburn</li>
-                <li>• Iron-rich foods for fatigue</li>
-              </ul>
+            
+            <div className="space-y-3">
+              <div className="bg-yellow-50 rounded-lg p-3">
+                <h4 className="text-sm font-semibold text-yellow-800 mb-2">Quick Tips</h4>
+                <ul className="text-xs text-gray-700 space-y-1">
+                  <li>• Eat small, frequent meals</li>
+                  <li>• Include protein in every meal</li>
+                  <li>• Choose whole grains over refined</li>
+                  <li>• Ginger helps with morning sickness</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Detailed Nutrition Info Card */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+              <CheckCircle className="w-6 h-6 text-orange-600" />
+            </div>
+            <h3 className="font-semibold text-gray-800 mb-4">Nutrition Details</h3>
+            
+            <div className="space-y-4">
+              <div className="bg-blue-50 rounded-lg p-3">
+                <h4 className="text-sm font-semibold text-blue-800 mb-2">Key Sources</h4>
+                <div className="text-xs text-gray-700 space-y-1">
+                  <div><strong>Protein:</strong> Lean meats, fish, eggs, beans</div>
+                  <div><strong>Iron:</strong> Red meat, spinach, lentils</div>
+                  <div><strong>Calcium:</strong> Dairy, leafy greens, sardines</div>
+                  <div><strong>DHA:</strong> Fatty fish, walnuts, supplements</div>
+                </div>
+              </div>
+              
+              <div className="bg-red-50 rounded-lg p-3">
+                <h4 className="text-sm font-semibold text-red-800 mb-2">Important Note</h4>
+                <p className="text-xs text-gray-700">
+                  Always consult your healthcare provider before making significant dietary changes or starting new exercises during pregnancy.
+                </p>
+              </div>
             </div>
           </div>
         </div>
